@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { SegmentBadge } from './SegmentBadge';
 import { EnergySelector } from './EnergySelector';
+import { LanguageSelector } from './LanguageSelector';
 import { generateMessageSuggestions } from '@/utils/messageGenerator';
 import { openWhatsApp } from '@/utils/whatsapp';
 import { MessageSquare, Clock, CheckCircle, SkipForward, ZapOff } from 'lucide-react';
@@ -19,16 +20,15 @@ interface ContactCardProps {
 
 export function ContactCard({ contact, onMarkSent, onSnooze, onSkip }: ContactCardProps) {
   const [energy, setEnergy] = useState<EnergyLevel>('medium');
+  const [language, setLanguage] = useState<'en' | 'fr'>('en');
   const [suggestions, setSuggestions] = useState<Array<{text: string; tone: string}>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState<string>('');
 
   const loadSuggestions = async () => {
-    if (suggestions.length > 0) return; // Already loaded
-    
     setIsLoading(true);
     try {
-      const generated = await generateMessageSuggestions(contact, energy);
+      const generated = await generateMessageSuggestions(contact, energy, language);
       setSuggestions(generated);
     } catch (error) {
       console.error('Failed to generate suggestions:', error);
@@ -108,10 +108,16 @@ export function ContactCard({ contact, onMarkSent, onSnooze, onSkip }: ContactCa
             <Clock className="w-4 h-4" />
             Last contact: {lastContactedText}
           </div>
-          <EnergySelector 
-            value={energy} 
-            onChange={handleEnergyChange}
-          />
+          <div className="flex items-center gap-2">
+            <EnergySelector 
+              value={energy} 
+              onChange={handleEnergyChange}
+            />
+            <LanguageSelector 
+              language={language} 
+              onLanguageChange={setLanguage} 
+            />
+          </div>
         </div>
 
         {/* Message Suggestions */}
@@ -125,7 +131,7 @@ export function ContactCard({ contact, onMarkSent, onSnooze, onSkip }: ContactCa
               disabled={isLoading}
               className="text-xs"
             >
-              {isLoading ? 'Generating...' : 'Generate'}
+              {isLoading ? 'Generating...' : 'Refresh'}
             </Button>
           </div>
           
