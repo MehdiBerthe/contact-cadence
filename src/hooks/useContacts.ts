@@ -147,6 +147,35 @@ export function useContacts() {
     fetchContacts();
   }, []);
 
+  const addContact = async (contactData: Omit<Contact, 'id' | 'user_id' | 'created_at' | 'updated_at' | 'last_contacted_at' | 'next_due_at'>) => {
+    try {
+      const now = new Date();
+      const nextDueAt = new Date();
+      nextDueAt.setDate(nextDueAt.getDate() + contactData.frequency_days);
+
+      const newContact: Contact = {
+        ...contactData,
+        id: `manual-${Date.now()}`,
+        user_id: 'demo-user',
+        created_at: now.toISOString(),
+        updated_at: now.toISOString(),
+        last_contacted_at: undefined,
+        next_due_at: nextDueAt.toISOString(),
+      };
+
+      // For demo: Add to local state
+      setContacts(prevContacts => [...prevContacts, newContact]);
+
+      // TODO: In production, add to Supabase
+      // const { error } = await supabase
+      //   .from('contacts')
+      //   .insert([newContact]);
+    } catch (err) {
+      console.error('Failed to add contact:', err);
+      throw err;
+    }
+  };
+
   return {
     contacts,
     loading,
@@ -155,6 +184,7 @@ export function useContacts() {
     markContactSent,
     snoozeContact,
     skipContact,
+    addContact,
     refreshContacts: fetchContacts
   };
 }

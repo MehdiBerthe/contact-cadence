@@ -1,16 +1,34 @@
 import { useState } from 'react';
 import { useContacts } from '@/hooks/useContacts';
 import { SegmentBadge } from '@/components/SegmentBadge';
+import { AddContactDialog } from '@/components/AddContactDialog';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Search, User, Phone, Mail, Linkedin, Building2 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from '@/hooks/use-toast';
 
 export default function Contacts() {
-  const { contacts, loading } = useContacts();
+  const { contacts, loading, addContact } = useContacts();
   const [searchTerm, setSearchTerm] = useState('');
+
+  const handleAddContact = async (contactData: any) => {
+    try {
+      await addContact(contactData);
+      toast({
+        title: "Contact added!",
+        description: `${contactData.first_name} ${contactData.last_name} has been added to your contacts.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add contact. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const filteredContacts = contacts.filter(contact => {
     const searchLower = searchTerm.toLowerCase();
@@ -52,8 +70,13 @@ export default function Contacts() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">All Contacts</h1>
-          <p className="text-gray-600">Manage your network and relationships</p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">All Contacts</h1>
+              <p className="text-gray-600">Manage your network and relationships</p>
+            </div>
+            <AddContactDialog onAddContact={handleAddContact} />
+          </div>
           
           {/* Stats */}
           <div className="flex gap-4 mt-4">
